@@ -1,0 +1,161 @@
+
+.MuiDrawer-paper{
+    position: relative !important;
+}
+
+.blue-grey {
+    background: #607d8b !important;
+    color: white !important;
+}
+
+.no-underline .MuiInput-underline::before {
+    border-bottom: none;
+}
+.MuiContainer-root{
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+}
+.large input {
+    font-size: 20px;
+    margin-top: -6px;
+}
+.MuiChip-root {
+    border-radius: 16px;
+}
+.CodeMirror-lint-message-error {
+    background-image: none !important;
+}
+
+.leaflet-custom-node-popup {
+    margin-left: 1px;
+    margin-bottom: 34px !important;
+}
+.leaflet-custom-rel-popup {
+    margin-left: 0px;
+}
+.leaflet-control-attribution {
+    display: none;
+}
+.leaflet-custom-tooltip {
+
+}
+.leaflet-marker-icon {
+    width: 50px !important;
+    margin-left: -25px !important;
+}
+.autosize .ReactCodeMirror .CodeMirror{
+    height: auto;
+}
+/* Hack to make the table header smaller, TODO - clean this up */
+.table-small-header {
+    height: 36px;
+}
+.MuiDataGrid-root {
+    border: none !important;
+}
+.MuiChip-root:before {
+    border: none !important;
+}
+/* .MuiDataGrid-columnHeaders {
+    min-height: 32px !important;
+    max-height: 32px !important;
+    line-height: 32px !important;
+}
+
+.MuiDataGrid-columnSeparator{
+    height: 32px;
+}
+.MuiDataGrid-columnHeaderTitleContainer {
+    padding-left: 1px !important;
+}
+.MuiDataGrid-window{
+    top: 32px !important;
+    overflow-y: hidden !important;
+    overflow-x: hidden !important;
+}
+.MuiTablePagination-root{
+    margin-top: -10px;
+} */
+.MuiTablePagination-root{
+    margin-top: -10px;
+}
+.MuiCardHeader-content .MuiInputBase-root.Mui-disabled {
+    color: inherit !important;
+}
+.MuiCardHeader-content .MuiInput-underline.Mui-disabled:before {
+    border-bottom-style: none !important;
+}
+.textinput-linenumbers {
+    scrollbar-width: none;
+    resize: none;
+    background: url(linenumbers.png);
+    background-size: 20;
+    background-attachment: local;
+    background-repeat: no-repeat;
+    font-family: monospace;
+    font-size: 14px;
+    line-height: 16px;
+    border-color: #fff;
+    width: calc(100% + 30px);
+    display: block;
+    background-size: 26px;
+    white-space: pre;
+    background-position: 0px -11px;
+    /*line-height: 1.2em;*/
+    /* margin-left: -15px !important; */
+    padding-right: 0px !important;
+    /* margin-right: -35px !important; */
+    margin-top: 0px !important;
+    padding-left: 30px;
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
+    margin-bottom: 0px !important;
+    overflow-x: scroll !important;
+    overflow-y: scroll;
+    min-height: 116px;
+    /*height: 200px !important;*/
+}
+
+.textinput-linenumbers::-webkit-scrollbar {
+    display: none;
+  }
+
+  .MuiDrawer-docked .MuiDrawer-paper {
+      overflow-x: hidden;
+  }
+
+  #center-aligned {
+      text-align: center;
+  }
+
+.card-view.expanded {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: white;
+    z-index: 1299;
+}
+
+.force-graph-container .graph-tooltip {
+    color: black !important;
+    background: none !important;
+}
+
+.title-bar {
+    -webkit-app-region: drag;
+}
+
+#graph-container {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    position: absolute;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    opacity: 1;
+}

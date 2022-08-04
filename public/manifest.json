@@ -1,0 +1,22 @@
+{
+    "short_name": "BlueHound",
+    "name": "BlueHound",
+    "homepage": "https://github.com/zeronetworks/BlueHound/",
+    "neo4jDesktop": {
+        "apiVersion": "^1.2.0"
+    },
+    "icons": [
+        {
+            "src": "favicon.ico",
+            "type": "ico"
+        },
+        {
+            "src": "favicon.png",
+            "type": "png"
+        }
+    ],
+    "start_url": "./index.html",
+    "display": "standalone",
+    "theme_color": "#000000",
+    "background_color": "#ffffff"
+}

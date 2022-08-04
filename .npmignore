@@ -1,0 +1,12 @@
+public
+src
+.env
+.env.hosted
+.gitignore
+tsconfig.json
+yarn.lock
+node_modules
+*.tgz
+desktop.passphrase
+*.config.js
+desktop-signer.sh
