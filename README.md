@@ -1,3 +1,6 @@
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/zeronetworks/bluehound)](https://github.com/zeronetworks/bluehound/releases/latest)
+![GitHub all releases](https://img.shields.io/github/downloads/zeronetworks/bluehound/total)
+
 <br>
 <p align="center"><img src="public/logo.png" width="400"></p>
 <br>
