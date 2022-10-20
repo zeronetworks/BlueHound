@@ -13,6 +13,7 @@ import {
     SET_CONNECTION_MODAL_OPEN,
     SET_CONNECTION_PROPERTIES,
     SET_DASHBOARD_TO_LOAD_AFTER_CONNECTING,
+    SET_ZERO_ALERT_SHOWN,
     SET_DESKTOP_CONNECTION_PROPERTIES,
     SET_OLD_DASHBOARD,
     SET_SHARE_DETAILS_FROM_URL,
@@ -31,7 +32,12 @@ import {
     SET_SHARPHOUND_UPLOAD_RESULTS,
     SET_SHARPHOUND_CLEAR_RESULTS,
     SET_FILTER_MODAL_OPEN,
-    SET_QUERY_MODAL_OPEN, SET_PARALLEL_QUERIES, SET_DB_VERSION, SET_CACHED_QUERIES
+    SET_QUERY_MODAL_OPEN,
+    SET_PARALLEL_QUERIES,
+    SET_DB_VERSION,
+    SET_CACHED_QUERIES,
+    SET_ZERO_ALERT_OPEN,
+    SET_COLLECTION_HOURS
 } from "./ApplicationActions";
 
 const update = (state, mutations) =>
@@ -63,9 +69,12 @@ const initialState =
     standalone: false,
     toolsParallel: false,
     parallelQueries: 5,
+    collectionHours: 0,
     sharphoundUploadResults: true,
     sharphoundClearResults: true,
-    cachedQueries: {}
+    cachedQueries: {},
+    zeroAlertShown: true,
+    zeroAlertOpen: false
 }
 
 export const applicationReducer = (state = initialState, action: { type: any; payload: any; }) => {
@@ -151,6 +160,11 @@ export const applicationReducer = (state = initialState, action: { type: any; pa
             state = update(state, { parallelQueries: amount })
             return state
         }
+        case SET_COLLECTION_HOURS: {
+            const { amount } = payload;
+            state = update(state, { collectionHours: amount })
+            return state
+        }
         case SET_SHARPHOUND_UPLOAD_RESULTS: {
             const { status } = payload;
             state = update(state, { sharphoundUploadResults: status })
@@ -209,6 +223,16 @@ export const applicationReducer = (state = initialState, action: { type: any; pa
         case SET_DASHBOARD_TO_LOAD_AFTER_CONNECTING: {
             const { id } = payload;
             state = update(state, { dashboardToLoadAfterConnecting: id })
+            return state;
+        }
+        case SET_ZERO_ALERT_SHOWN: {
+            const { alert_state } = payload;
+            state = update(state, { zeroAlertShown: alert_state })
+            return state;
+        }
+        case SET_ZERO_ALERT_OPEN: {
+            const { alert_state } = payload;
+            state = update(state, { zeroAlertOpen: alert_state })
             return state;
         }
         case SET_CONNECTION_PROPERTIES: {

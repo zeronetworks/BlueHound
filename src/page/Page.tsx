@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, {useCallback, useEffect} from 'react';
 import { connect } from 'react-redux';
 import NeoAddCard from '../card/CardAddButton';
 import NeoCard from '../card/Card';
@@ -7,7 +7,7 @@ import { removeReportRequest, shiftReportLeftRequest, shiftReportRightRequest } 
 import Grid from '@material-ui/core/Grid';
 import { getDashboardIsEditable } from '../settings/SettingsSelectors';
 import { getDashboardSettings } from '../dashboard/DashboardSelectors';
-
+import NeoPageAlert from './PageAlert'
 
 /**
  * A component responsible for rendering the page, a collection of reports.
@@ -26,6 +26,7 @@ export const NeoPage = (
     const loadingMessage = <div>Loading card...</div>;
     const content = (
         <div style={{ flexGrow: 1, paddingTop: "52px" }}>
+            <NeoPageAlert/>
             <Grid container spacing={2}>
                 {reports.map((report, index) => {
                     // @ts-ignore

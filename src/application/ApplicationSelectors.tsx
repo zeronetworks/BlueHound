@@ -121,10 +121,22 @@ export const getParallelQueries = (state: any) => {
     return state.application.parallelQueries;
 }
 
+export const getCollectionHours = (state: any) => {
+    return state.application.collectionHours;
+}
+
 export const getSharpHoundUploadResults = (state: any) => {
     return state.application.sharphoundUploadResults;
 }
 
 export const getSharpHoundClearResults = (state: any) => {
     return state.application.sharphoundClearResults;
+}
+
+export const getZeroAlertShown = (state: any) => {
+    return state.application.zeroAlertShown;
+}
+
+export const getZeroAlertOpen = (state: any) => {
+    return state.application.zeroAlertOpen;
 }

@@ -125,6 +125,12 @@ export const setParallelQueries = (amount: number) => ({
     payload: { amount },
 });
 
+export const SET_COLLECTION_HOURS = 'APPLICATION/SET_COLLECTION_HOURS';
+export const setCollectionHours = (amount: number) => ({
+    type: SET_COLLECTION_HOURS,
+    payload: { amount },
+});
+
 export const SET_SHARPHOUND_UPLOAD_RESULTS = 'APPLICATION/SET_SHARPHOUND_UPLOAD_RESULTS';
 export const setSharpHoundUploadResults = (status: boolean) => ({
     type: SET_SHARPHOUND_UPLOAD_RESULTS,
@@ -191,4 +197,16 @@ export const SET_DASHBOARD_TO_LOAD_AFTER_CONNECTING = 'APPLICATION/SET_DASHBOARD
 export const setDashboardToLoadAfterConnecting = (id: any) => ({
     type: SET_DASHBOARD_TO_LOAD_AFTER_CONNECTING,
     payload: { id },
+});
+
+export const SET_ZERO_ALERT_SHOWN = 'APPLICATION/SET_ZERO_ALERT_SHOWN';
+export const setZeroAlertShown = (alert_state: boolean) => ({
+    type: SET_ZERO_ALERT_SHOWN,
+    payload: { alert_state}
+});
+
+export const SET_ZERO_ALERT_OPEN = 'APPLICATION/SET_ZERO_ALERT_OPEN';
+export const setZeroAlertOpen = (alert_state: boolean) => ({
+    type: SET_ZERO_ALERT_OPEN,
+    payload: { alert_state}
 });

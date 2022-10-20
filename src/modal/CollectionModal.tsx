@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import Button from '@mui/material/Button';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -41,11 +41,21 @@ import {Cancel, Stop} from "@material-ui/icons";
 import {FormControl, InputLabel, MenuItem, Select} from "@material-ui/core"
 import { cloneDeep } from 'lodash';
 import { makeStyles } from "@material-ui/core/styles";
-import {Autocomplete, Checkbox, FormControlLabel, FormGroup, Stack, Switch} from "@mui/material";
+import {Autocomplete, Checkbox, FormControlLabel, FormGroup, Input, Stack, Switch} from "@mui/material";
+import { Dayjs } from 'dayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import AlarmIcon from '@mui/icons-material/Alarm';
 import { alpha, styled } from '@mui/material/styles';
 import { green } from '@mui/material/colors';
 import {handleRefreshClick} from "./RefreshModal";
+import {ee} from "../report/Report";
+import debounce from 'lodash/debounce';
+export const RUN_COLLECTION_EVENT = 'runCollection'
+import {Mutex} from 'async-mutex';
 
+const mutex = new Mutex();
 
 export enum ToolType {
     Binary,
@@ -66,11 +76,23 @@ const neo4jConnectionParameters = ["url", "port", "username", "password"]
 
 let toolsOutputsRefs = [];
 
+function allToolsFinished(toolsRunning) {
+    for (const key in toolsRunning) {
+        if (toolsRunning[key] == true) { return false }
+    }
+    return true;
+}
+
 function setToolNotRunning(toolId) {
     const state = store.getState();
     let newData = cloneDeep(getToolsRunning(state));
     newData[toolId] = false;
     store.dispatch(setToolsRunning(newData));
+
+    if (allToolsFinished(newData) && window.electron != undefined) {
+        console.log('tools finished running')
+        window.electron.toolsFinishedRunning();
+    }
 }
 
 const toolIdToToolType = ((toolId) => {
@@ -128,6 +150,14 @@ if (window.electron != undefined) {
 
     window.electron.receive("tool-killed", (toolId) => {
         setToolNotRunning(toolId);
+    });
+
+    window.electron.receive('run-all-collection', (unused) => {
+        ee.emit(RUN_COLLECTION_EVENT);
+    });
+
+    window.electron.receive('tool-notification', (message) => {
+        store.dispatch(createNotification("BlueHound", message));
     });
 }
 
@@ -227,6 +257,41 @@ export const NeoCollectionModal = ({ open, handleClose, dashboard, setDashboard,
     const [dialogToolId, setDialogToolId] = React.useState(null);
     const [checked, setChecked] = React.useState<boolean>(sharphoundUploadResults != undefined ? sharphoundUploadResults : true);
     const [clearChecked, setClearChecked] = React.useState<boolean>(sharphoundClearResults != undefined ? sharphoundClearResults : true);
+    const [scheduleDialogOpen, setScheduleDialogOpen] = React.useState(false);
+    const [scheduleFrequency, setScheduleFrequency] = React.useState('WEEKLY');
+    const [dayOfWeek, setDayOfWeek] = React.useState('MON');
+    const [dayOfMonth, setDayOfMonth] = React.useState(1);
+    const [timeValue, setTimeValue] = React.useState<Dayjs | null>('2022-01-01 00:00');
+
+    const daysInMonth = Array.from(Array(31).keys()).map(x => x + 1);
+
+    const handleFrequencyChange = (event) => {
+        setScheduleFrequency(event.target.value as string);
+    };
+
+    const handleDayOfWeekChange = (event) => {
+        setDayOfWeek(event.target.value as string);
+    };
+
+    const handleDayOfMonthChange = (event) => {
+        setDayOfMonth(event.target.value as string);
+    };
+
+    const padTime = (num) => {
+        return String(num).padStart(2, '0');
+    }
+
+    const createScheduleTask = () => {
+        if (window.electron != undefined) { // running in Electron
+            let scheduleTime = "00:00";
+            if (typeof timeValue != 'string') {
+                scheduleTime = padTime(timeValue.hour()) + ":" + padTime(timeValue.minute());
+            }
+            window.electron.addScheduledTask(scheduleFrequency, dayOfWeek, dayOfMonth, scheduleTime);
+        } else {
+            alert("Available only in Electron")
+        }
+    }
 
     if (toolsOutputsRefs.length == 0) {
         Object.keys(toolsParameters).map((element, index) => {
@@ -322,42 +387,45 @@ export const NeoCollectionModal = ({ open, handleClose, dashboard, setDashboard,
 
     function handleRunAllClick() {
         if (window.electron != undefined) { // running in Electron
-            //const enabledTools = toolsParameters.find(tool => tool.enabled);
-            const enabledTools = [];
-            toolsParameters.map((tool, index) => {
-                if (tool.enabled) {
-                    tool.toolId = index;
-                    enabledTools.push(tool);
+            mutex.runExclusive(() => {
+                if (isAnyReportRunning()) return;
+
+                const enabledTools = [];
+                toolsParameters.map((tool, index) => {
+                    if (tool.enabled) {
+                        tool.toolId = index;
+                        enabledTools.push(tool);
+                    }
+                })
+
+                const toolWithMissingPath = enabledTools.find(tool => !tool["path"])
+                if (toolWithMissingPath) {
+                    createNotification("Error", "Path is missing for " + toolWithMissingPath["name"]);
+                    return
                 }
-            })
 
-            const toolWithMissingPath = enabledTools.find(tool => !tool["path"])
-            if (toolWithMissingPath) {
-                createNotification("Error", "Path is missing for " + toolWithMissingPath["name"] );
-                return
-            }
+                setToolsOutput({});
 
-            setToolsOutput({});
+                if (!toolsParallel) {
+                    window.electron.runToolsInSerial(enabledTools);
+                }
 
-            if (!toolsParallel) {
-                window.electron.runToolsInSerial(enabledTools);
-            }
+                let updatedLoadingObject = {}
+                for (let i = 0; i < toolsParameters.length; i++) {
+                    if (!toolsParameters[i].enabled) continue;
 
-            let updatedLoadingObject = {}
-            for (let i = 0; i < toolsParameters.length; i++) {
-                if (!toolsParameters[i].enabled) continue;
-
-                updatedLoadingObject[i] = true;
-                if (toolsParallel) {
-                    if (toolsParameters[i]["toolType"] == ToolType.Python) {
-                        window.electron.runPython(i, toolsParameters[i]["path"], insertNeo4jArgs(toolsParameters[i]["args"]));
-                    } else {
-                        window.electron.runTool(i, toolsParameters[i]["path"], insertNeo4jArgs(toolsParameters[i]["args"]));
+                    updatedLoadingObject[i] = true;
+                    if (toolsParallel) {
+                        if (toolsParameters[i]["toolType"] == ToolType.Python) {
+                            window.electron.runPython(i, toolsParameters[i]["path"], insertNeo4jArgs(toolsParameters[i]["args"]));
+                        } else {
+                            window.electron.runTool(i, toolsParameters[i]["path"], insertNeo4jArgs(toolsParameters[i]["args"]));
+                        }
                     }
                 }
-            }
-            setToolsRunning(updatedLoadingObject);
-            setExpanded(enabledTools[0].toolId);
+                setToolsRunning(updatedLoadingObject);
+                setExpanded(enabledTools[0].toolId);
+            });
         } else {
             alert("Available only in Electron")
         }
@@ -644,6 +712,13 @@ export const NeoCollectionModal = ({ open, handleClose, dashboard, setDashboard,
         );
     }
 
+    const debouncedHandleRunAllClick = useCallback(
+        debounce(handleRunAllClick, 500),
+        [],
+    );
+
+    ee.addListener(RUN_COLLECTION_EVENT, debouncedHandleRunAllClick);
+
     return (
         <div>
             <Dialog maxWidth={"lg"} open={open} onClose={closeModal} aria-labelledby="form-dialog-title">
@@ -673,6 +748,11 @@ export const NeoCollectionModal = ({ open, handleClose, dashboard, setDashboard,
                             </Stack>
                         </FormGroup>
                             </Tooltip>
+                        <Button variant="outlined" endIcon={<AlarmIcon />}
+                                onClick={() => setScheduleDialogOpen(true)}
+                                style={{marginBottom: "-12px", marginRight: 10, height: 34, marginTop: 18, borderRadius: 10}}>
+                            Schedule
+                        </Button>
                         <LoadingButton
                             onClick={handleRunAllClick}
                             //loading={importToolLoading[index]}
@@ -711,6 +791,63 @@ export const NeoCollectionModal = ({ open, handleClose, dashboard, setDashboard,
                             </DialogActions>
                         </Dialog>
                     </div></DialogContent>
+            </Dialog>
+            <Dialog open={scheduleDialogOpen}>
+                <DialogContent>
+                    <FormControl size={"small"}>
+                        <DialogTitle style={{marginRight: "auto", marginLeft: "auto"}}>Scheduling Options</DialogTitle>
+                        <div style={{display: "flex", marginRight: 26, marginTop: 8}}>
+                        <Typography variant={"body2"} style={{marginRight: 16, marginTop: 4}} >Frequency:</Typography>
+                        <Select style={{width: 200}} value={scheduleFrequency} onChange={handleFrequencyChange}>
+                            <MenuItem value={"DAILY"}>Daily</MenuItem>
+                            <MenuItem value={"WEEKLY"}>Weekly</MenuItem>
+                            <MenuItem value={"MONTHLY"}>Monthly</MenuItem>
+                        </Select>
+                        </div>
+                        {scheduleFrequency == "WEEKLY" ?
+                            <div style={{display: "flex", marginRight: 26, marginTop: 24}}>
+                                <Typography variant={"body2"} style={{marginRight: 58, marginTop: 4}}>Day:</Typography>
+                                <Select style={{width: 200}} value={dayOfWeek} onChange={handleDayOfWeekChange}>
+                                    <MenuItem value={"MON"}>Monday</MenuItem>
+                                    <MenuItem value={"TUE"}>Tuesday</MenuItem>
+                                    <MenuItem value={"WED"}>Wednesday</MenuItem>
+                                    <MenuItem value={"THU"}>Thursday</MenuItem>
+                                    <MenuItem value={"FRI"}>Friday</MenuItem>
+                                    <MenuItem value={"SAT"}>Saturday</MenuItem>
+                                    <MenuItem value={"SUN"}>Sunday</MenuItem>
+                                </Select>
+                            </div>
+                         : <></>}
+                        {scheduleFrequency == "MONTHLY" ?
+                            <div style={{display: "flex", marginRight: 26, marginTop: 24}}>
+                                <Typography variant={"body2"} style={{marginRight: 58, marginTop: 4}}>Day:</Typography>
+                                <Select style={{width: 200}} value={dayOfMonth} onChange={handleDayOfMonthChange}
+                                        MenuProps={{PaperProps: {style: {maxHeight: 150}}}}>
+                                    {daysInMonth.map((dayNumber) => (
+                                        <MenuItem value={dayNumber}>{dayNumber}</MenuItem>
+                                    ))}
+                                </Select>
+                            </div>
+                            : <></>}
+                        <div style={{display: "flex", marginRight: 26, marginTop: 24, marginBottom: 8}}>
+                            <Typography variant={"body2"} style={{marginRight: 16, marginTop: 4}} >Start Time:</Typography>
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <TimePicker
+                                    value={timeValue}
+                                    onChange={(newValue) => {
+                                        setTimeValue(newValue);
+                                    }}
+                                    renderInput={(params) => <TextField {...params} />}
+                                    style={{width: 200}}
+                                />
+                            </LocalizationProvider>
+                        </div>
+                    </FormControl>
+                </DialogContent>
+                <DialogActions style={{marginBottom: 10}}>
+                    <Button onClick={() => setScheduleDialogOpen(false)}>Cancel</Button>
+                    <Button onClick={() => { createScheduleTask(); setScheduleDialogOpen(false)}}>Save</Button>
+                </DialogActions>
             </Dialog>
         </div >
     );

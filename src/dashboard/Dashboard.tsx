@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, {useCallback, useEffect} from 'react';
 import NeoPage from '../page/Page';
 import Container from '@material-ui/core/Container';
 import NeoDrawer from './DashboardDrawer';
@@ -11,8 +11,6 @@ import NeoDashboardConnectionUpdateHandler from './DashboardConnectionUpdateHand
 import { forceRefreshPage } from '../page/PageActions';
 import { getPageNumber } from '../settings/SettingsSelectors';
 import { createNotification } from '../application/ApplicationActions';
-
-
 
 const Dashboard = ({ pagenumber, connection, onConnectionUpdate }) => {
     const [open, setOpen] = React.useState(false);

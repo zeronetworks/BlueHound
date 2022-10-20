@@ -101,7 +101,9 @@ const Application = ({ connection, connected, hasCachedDashboard, oldDashboard, 
             createConnection(connection.protocol, connection.url, connection.port, connection.database, connection.username, connection.password);
         }
 
-
+        if (window.electron != undefined) { // running in Electron
+            window.electron.appLoaded();
+        }
     }
 
     // Only render the dashboard component if we have an active Neo4j connection.

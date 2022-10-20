@@ -16,7 +16,7 @@ import {applicationGetDebugState} from "../application/ApplicationSelectors";
 import JSZip from 'jszip';
 import FileSaver from 'file-saver';
 
-const version = "1.0.0";
+const version = "1.1.0";
 
 if (window.electron != undefined) {
     window.electron.receive("console-messages", (consoleData) => {
@@ -142,35 +142,32 @@ export const NeoAboutModal = ({ open, handleClose, getDebugState }) => {
                         so if you have ideas, don’t hesitate to reach out to us at <a href={"mailto:" + email}>{email}</a> or via the Github repository.
                         <br />
                         <hr></hr>
-                        <table style={{width: "100%", paddingTop: 2, paddingBottom: 2}}>
-                            <tr>
-                                <td>
-                                    <Button
-                                        component="label"
-                                        onClick={downloadDebugFile}
-                                        style={{ backgroundColor: "white" }}
-                                        color="default"
-                                        variant="contained"
-                                        size="small"
-                                        endIcon={<BugReportIcon />}>
-                                        Debug Report
-                                    </Button>
-                                    <Button
-                                        component="label"
-                                        onClick={() => setRestoreDialogOpen(true) }
-                                        style={{ backgroundColor: "white", marginLeft: 24 }}
-                                        color="default"
-                                        variant="contained"
-                                        size="small"
-                                        endIcon={<SettingsBackupRestore />}>
-                                        Restore Default
-                                    </Button>
-                                </td>
-                                <td>
-                                    <i style={{ float: "right", fontSize: "11px" }}>v{version}</i>
-                                </td>
-                            </tr>
-                        </table>
+                        <div style={{display: "flex"}}>
+                            <Button
+                                component="label"
+                                onClick={downloadDebugFile}
+                                style={{ backgroundColor: "white" }}
+                                color="default"
+                                variant="contained"
+                                size="small"
+                                endIcon={<BugReportIcon />}>
+                                Debug Report
+                            </Button>
+                            <Button
+                                component="label"
+                                onClick={() => setRestoreDialogOpen(true) }
+                                style={{ backgroundColor: "white", marginLeft: 24 }}
+                                color="default"
+                                variant="contained"
+                                size="small"
+                                endIcon={<SettingsBackupRestore />}>
+                                Restore Default
+                            </Button>
+                            <i style={{fontSize: "11px", marginLeft: "auto", marginRight: 16, marginTop: "auto", marginBottom: "auto"}}>v{version}</i>
+                            <a href={"https://zeronetworks.com/"} style={{marginRight: 0, height: 24, marginTop: "auto", marginBottom: "auto"}}>
+                                <img src={'./zero-networks-logo.svg'} style={{marginRight: 0, height: 24, marginTop: "auto", marginBottom: "auto"}}/>
+                            </a>
+                        </div>
                     </div></DialogContent>
             </Dialog>
         </div >

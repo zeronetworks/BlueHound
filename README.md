@@ -20,6 +20,12 @@ BlueHound supports presenting your data as tables, graphs, bar charts, line char
 4. **Easy Customization**: Any custom collection method can be added into BlueHound. Users can even add their own custom parameters or even custom icons for their graphs.
 
 ## Getting Started
+### ROST ISO
+BlueHound can be used as part of the [ROST image](https://zeronetworks.com/ROST-iso.zip), which comes pre-configured with everything you need (BlueHound, Neo4j, BloodHound, and a sample dataset).
+<br>To load ROST, create a new virtual machine, and install it from the ISO like you would for a new Windows host.
+### BlueHound Binary
+If you already have a Neo4j instance running, you can download a pre-compiled version of BlueHound from our [release page](https://github.com/zeronetworks/BlueHound/releases). Just download the zip file suitable to your OS version, extract it, and run the binary.
+### Using BlueHound
 1. Connect to your Neo4j server
 2. Download [SharpHound](https://github.com/BloodHoundAD/BloodHound/blob/master/Collectors/SharpHound.exe), [ShotHound](https://github.com/zeronetworks/BloodHound-Tools/tree/main/ShotHound) and the [Vulnerability Scanner report parser](https://github.com/zeronetworks/BloodHound-Tools/tree/main/VulnerabilitiesDataImport)
 3. Use the **Data Import** section to collect & import data into your Neo4j database.

@@ -1,4 +1,4 @@
-const {app, BrowserWindow, ipcMain, dialog, shell, Menu } = require('electron');
+const {app, BrowserWindow, ipcMain, dialog, shell, Menu, ipcRenderer } = require('electron');
 const path = require('path');
 const os = require('os');
 const { spawn } = require('child_process');
@@ -6,6 +6,7 @@ const { handleSharpHoundResultsUpload } = require('./collectors/BloodHoundUpload
 const logMessages = [];
 
 let mainWindow;
+const gotTheLock = app.requestSingleInstanceLock();
 let shellEnvironments;
 let logLevel = {
     0: "verbose",
@@ -57,9 +58,44 @@ function createWindow () {
     });
 }
 
-app.on('ready', createWindow);
+if (!gotTheLock) {
+    app.quit();
+} else {
+    app.on('second-instance', (event, commandLine, workingDirectory, additionalData) => {
+        if (commandLine.includes('--collection-only')) {
+            mainWindow.webContents.send('run-all-collection');
+        };
+
+        if (mainWindow) {
+            if (mainWindow.isMinimized()) mainWindow.restore()
+            mainWindow.focus()
+        }
+    })
+
+    app.whenReady().then(() => {
+        createWindow();
+    })
+}
+
+//app.on('ready', createWindow);
 
 const runningProcesses = {};
+
+const isCollectionOnly = () => {
+    return process.argv.includes('--collection-only');
+}
+
+ipcMain.handle("app-loaded", async (event) => {
+    if (isCollectionOnly()) {
+        dialog.showMessageBox(mainWindow, {
+            title: 'Collection-only mode',
+            buttons: ['Dismiss'],
+            type: 'info',
+            message: 'BlueHound is running in collection-only mode…',
+        });
+        event.sender.send('run-all-collection', '');
+    }
+});
 
 ipcMain.handle("open-dev-tools", async (event) => {
     await mainWindow.webContents.openDevTools();
@@ -154,7 +190,7 @@ const runToolsInSerial = async (event, toolsData) => {
     result.on('close', (code) => {
         event.sender.send("tool-data-done", tool.toolId, code, path.dirname(toolPath))
         delete runningProcesses[tool.toolId];
-        if (toolsData.length > 1) { runToolsInSerial(event, toolsData.slice(1)) };
+        if (toolsData.length > 1) { runToolsInSerial(event, toolsData.slice(1)) } ;
     });
 }
 
@@ -195,4 +231,47 @@ ipcMain.handle("kill-process", async (event, toolId) => {
 
 ipcMain.handle("upload-sharphound-results", async (event, toolId, resultsPath, connectionProperties, clearResults) => {
     await handleSharpHoundResultsUpload(event, toolId, resultsPath, connectionProperties, clearResults);
+})
+
+ipcMain.handle("tools-finished-running", async (event) => {
+    if (isCollectionOnly()) {
+        app.quit();
+    }
+})
+
+ipcMain.handle("add-scheduled-task", async (event, scheduleFrequency, dayOfWeek, dayOfMonth, scheduleTime) => {
+    if (os.platform() != 'win32') {
+        dialog.showMessageBox(mainWindow, {
+            title: 'OS not supported',
+            buttons: ['Dismiss'],
+            type: 'error',
+            message: 'Adding scheduled task is currently only supported on Windows.\n\n' +
+                'The --collection-only argument can be used to manually schedule BlueHound on non-Windows hosts.',
+        });
+        return;
+    }
+
+    let args = [];
+    const taskName = '"BlueHound Collection"';
+    const appPathWithArgs = `"'${path.resolve('.', 'BlueHound.exe')}' --collection-only"`;
+
+    if (scheduleFrequency == 'DAILY') {
+        args = ['/CREATE', '/F', '/SC DAILY', '/TN ' + taskName, '/TR ' + appPathWithArgs, '/ST ' + scheduleTime];
+    } else if (scheduleFrequency == 'WEEKLY') {
+        args = ['/CREATE', '/F', '/SC WEEKLY', '/D ' + dayOfWeek, '/TN ' + taskName, '/TR ' + appPathWithArgs, '/ST ' + scheduleTime];
+    } else if (scheduleFrequency == 'MONTHLY') {
+        args = ['/CREATE', '/F', '/SC MONTHLY', '/D ' + dayOfMonth, '/TN ' + taskName, '/TR ' + appPathWithArgs, '/ST ' + scheduleTime];
+    }
+
+    const result = spawn("SCHTASKS", args, { shell: true });
+
+    result.on('error', function (err) { // needed for catching ENOENT
+        event.sender.send("tool-notification", err)
+    });
+
+    result.on('close', (code) => {
+        if (code == 0) {
+            event.sender.send("tool-notification", "Scheduled task added successfully.")
+        }
+    });
 })

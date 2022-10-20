@@ -23,10 +23,11 @@ const getNodeLabel = (labels) => {
     for (let bloodhoundLabel of BLOODHOUND_NODE_LABELS) {
         const foundIndex = labels.indexOf(bloodhoundLabel);
         if (foundIndex != -1) {
-            return labels[foundIndex]
+            return labels[foundIndex];
         }
     }
-    return labels[-1]
+
+    return labels[labels.length-1];
 }
 
 const update = (state, mutations) =>
@@ -283,6 +284,7 @@ const NeoGraphChart = (props: ChartProps) => {
                 const newImage = new Image();
                 newImage.src = node.lastLabel + '.png';
                 if (imageExists(newImage)) {
+                    console.log(newImage.src)
                     imgs[node.lastLabel] = newImage;
                     image = newImage;
                 }
