@@ -7,7 +7,7 @@
 BlueHound is an open-source tool that helps blue teams pinpoint the security issues that actually matter. By combining information about user permissions, network access and unpatched vulnerabilities, BlueHound reveals the paths attackers would take if they were inside your network<br>
 It is a fork of NeoDash, reimagined, to make it suitable for defensive security purposes.
 
-To get started with BlueHound, check out our [introductory video](https://youtu.be/WVup5tnURoM) and [blog post](https://zeronetworks.com/blog/bluehound-community-driven-resilience/).
+To get started with BlueHound, check out our [introductory video](https://youtu.be/WVup5tnURoM), [blog post](https://zeronetworks.com/blog/bluehound-community-driven-resilience/) and [Nodes22 conference talk](https://www.youtube.com/watch?app=desktop&v=76MWt8uugAg).
 <br><br>
 ![screenshot](public/screenshot.png)
 
