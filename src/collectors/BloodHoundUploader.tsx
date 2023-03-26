@@ -317,7 +317,13 @@ async function deleteNodes(event) {
 async function dropConstraints(event) {
     let session = driver.session();
     let constraints = [];
-    let result = await session.run('CALL db.constraints')
+    let result = [];
+
+    if (neoVersion.startsWith('4.3') || neoVersion.startsWith('4.4') || neoVersion.split(".", 1)[0] >= 5) {
+        result = await session.run('SHOW CONSTRAINTS')
+    } else {
+        result = await session.run('CALL db.constraints')
+    }
 
     for (let record of result.records){
         let constraint = record.get(0)
@@ -343,8 +349,13 @@ async function dropConstraints(event) {
 async function dropIndexes(event) {
     let session = driver.session();
     let indexes = [];
+    let result = [];
 
-    let result = await session.run('CALL db.constraints')
+    if (neoVersion.startsWith('4.3') || neoVersion.startsWith('4.4') || neoVersion.split(".", 1)[0] >= 5) {
+        result = await session.run('SHOW CONSTRAINTS')
+    } else {
+        result = await session.run('CALL db.constraints')
+    }
 
     for (let record of result.records){
         let constraint = record.get(0)

@@ -1,7 +1,7 @@
 {
   "name": "bluehound",
   "productName": "BlueHound",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "BlueHound",
   "neo4jDesktop": {
     "apiVersion": "^1.2.0"
