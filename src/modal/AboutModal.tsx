@@ -16,7 +16,7 @@ import {applicationGetDebugState} from "../application/ApplicationSelectors";
 import JSZip from 'jszip';
 import FileSaver from 'file-saver';
 
-const version = "1.1.1";
+const version = "1.1.2";
 
 if (window.electron != undefined) {
     window.electron.receive("console-messages", (consoleData) => {
