@@ -341,7 +341,7 @@ async function dropConstraints(event) {
     let result = [];
 
     if (neoVersion.startsWith('4.3') || neoVersion.startsWith('4.4') || neoVersion.split(".", 1)[0] >= 5) {
-        result = await session.run('SHOW CONSTRAINTS')
+        result = await session.run('SHOW CONSTRAINTS YIELD name')
     } else {
         result = await session.run('CALL db.constraints')
     }
